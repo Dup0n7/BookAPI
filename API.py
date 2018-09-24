@@ -6,7 +6,6 @@ from UserModel import User
 from functools import wraps
 
 
-
 app.config['SECRET_KEY'] = 'meow'
 
 
@@ -25,6 +24,7 @@ def get_token():
     else:
         return Response('', 401, mimetype='application/json')
 
+
 def token_required(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
@@ -37,10 +37,8 @@ def token_required(f):
     return wrapper
 
 
-
-# GET /books?token=askjfieisdkj389alskdjfiewo1334
+# GET /books
 @app.route('/books')
-
 def get_books():
     return jsonify({'books': Book.get_all_books()})
 
@@ -51,7 +49,7 @@ def get_book_by_isbn(isbn):
     return jsonify(return_value)
 
 
-# POST /books
+# POST /books?token=askjfieisdkj389alskdjfiewo1334
 # {
 #    'name': 'F',
 #    'price': 6.99,
@@ -71,7 +69,7 @@ def validBookObject(bookObject):
 
 # /books/isbn_number
 @app.route('/books', methods=['POST'])
-# @token_required
+@token_required
 def add_book():
     request_data = request.get_json()
     if validBookObject(request_data):
@@ -86,7 +84,8 @@ def add_book():
             "helpString": "Data passed in similar to this {'name': 'bookname', 'price': 7.99, 'isbn': 97803948001}"
                           "isbn must also be unique"
         }
-        response = Response(json.dumps(invalidBookObjectErrorMsg), status=400, mimetype='application/json');
+        response = Response(json.dumps(invalidBookObjectErrorMsg),
+                            status=400, mimetype='application/json')
         return response
 
 
@@ -107,7 +106,8 @@ def replace_book(isbn):
             "error": "Valid book object must be passed in the reqeust",
             "helpString": "Data passed in similar to this {'name': 'bookname', 'price': 7.99}"
         }
-        response = Response(json.dumps(invalidBookObjectErrorMsg), status=400, mimetype='application/json');
+        response = Response(json.dumps(invalidBookObjectErrorMsg),
+                            status=400, mimetype='application/json')
         return response
     Book.replace_book(isbn, request_data['name'], request_data['price'])
     response = Response("", status=204)
@@ -140,8 +140,9 @@ def delete_book(isbn):
     invalidBookObjectErrorMsg = {
         "error": "Book with the ISBN number that was provided was not found, so therefore unable to delete"
     }
-    response = Response(json.dumps(invalidBookObjectErrorMsg), status=404, mimetype='application/json')
-    return response;
+    response = Response(json.dumps(invalidBookObjectErrorMsg),
+                        status=404, mimetype='application/json')
+    return response
 
 
 app.run(port=5000)
